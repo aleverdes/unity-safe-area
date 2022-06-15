@@ -1,18 +1,22 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 namespace AffenCode
 {
     [RequireComponent(typeof(RectTransform))]
     public class SafeArea : MonoBehaviour
     {
-        [SerializeField] private RectTransform _rectTransform;
-
-        private CanvasScaler _canvasScaler;
+        [FormerlySerializedAs("_rectTransform")]
+        public RectTransform RectTransform;
+        public CanvasScaler CanvasScaler;
+        public SafeAreaPostProcess[] PostProcesses;
         
         private void Reset()
         {
-            _rectTransform = GetComponent<RectTransform>();
+            RectTransform = GetComponent<RectTransform>();
+            CanvasScaler = GetComponentInParent<CanvasScaler>();
+            PostProcesses = GetComponents<SafeAreaPostProcess>();
         }
 
         private void Start()
@@ -22,45 +26,48 @@ namespace AffenCode
 
         private void Process()
         {
-            var referenceResolutionAspect = Vector2.one;
-            var aspectRatio = 1f;
 
-            _canvasScaler = GetComponentInParent<CanvasScaler>();
-
-            if (!_canvasScaler)
+            if (!CanvasScaler)
             {
-                Debug.LogError("SafeArea required CanvasScaler");
+                CanvasScaler = GetComponentInParent<CanvasScaler>();
+            }
+
+            if (!CanvasScaler)
+            {
+                Debug.LogError("SafeArea required CanvasScaler", this);
                 return;
             }
             
-            if (_canvasScaler.screenMatchMode == CanvasScaler.ScreenMatchMode.MatchWidthOrHeight)
+            if (CanvasScaler.screenMatchMode == CanvasScaler.ScreenMatchMode.MatchWidthOrHeight)
             {
                 var screen = new Vector2(Screen.width, Screen.height);
-                var referenceResolution = _canvasScaler.referenceResolution;
+                var referenceResolution = CanvasScaler.referenceResolution;
+                var referenceResolutionAspect = Vector2.one;
                 referenceResolutionAspect.x = referenceResolution.x / screen.x;
                 referenceResolutionAspect.y = referenceResolution.y / screen.y;
-                aspectRatio = Mathf.Lerp(referenceResolutionAspect.x, referenceResolutionAspect.y, _canvasScaler.matchWidthOrHeight);
+                var aspectRatio = Mathf.Lerp(referenceResolutionAspect.x, referenceResolutionAspect.y, CanvasScaler.matchWidthOrHeight);
 
-                _rectTransform.anchorMin = Vector2.zero;
-                _rectTransform.anchorMax = Vector2.zero;
-                _rectTransform.pivot = Vector2.zero;
-                _rectTransform.anchoredPosition = aspectRatio * new Vector2(Screen.safeArea.x, Screen.safeArea.y);
-                _rectTransform.sizeDelta = aspectRatio * new Vector2(Screen.safeArea.width, Screen.safeArea.height);
+                RectTransform.anchorMin = Vector2.zero;
+                RectTransform.anchorMax = Vector2.zero;
+                RectTransform.pivot = Vector2.zero;
+                RectTransform.anchoredPosition = aspectRatio * new Vector2(Screen.safeArea.x, Screen.safeArea.y);
+                RectTransform.sizeDelta = aspectRatio * new Vector2(Screen.safeArea.width, Screen.safeArea.height);
             }
-            else if (_canvasScaler.screenMatchMode == CanvasScaler.ScreenMatchMode.Expand)
+            else if (CanvasScaler.screenMatchMode == CanvasScaler.ScreenMatchMode.Expand)
             {
                 var canvas = GetComponentInParent<Canvas>();
                 var canvasScale = canvas.transform.localScale;
                 
-                var screen = new Vector2(Screen.width, Screen.height);
-                var referenceResolution = _canvasScaler.referenceResolution;
-                var safeArea = Screen.safeArea;
-                
-                _rectTransform.anchorMin = Vector2.zero;
-                _rectTransform.anchorMax = Vector2.zero;
-                _rectTransform.pivot = Vector2.zero;
-                _rectTransform.anchoredPosition = new Vector2(Screen.safeArea.x / canvasScale.x, Screen.safeArea.y / canvasScale.y);
-                _rectTransform.sizeDelta = new Vector2(Screen.safeArea.width / canvasScale.x, Screen.safeArea.height / canvasScale.y);
+                RectTransform.anchorMin = Vector2.zero;
+                RectTransform.anchorMax = Vector2.zero;
+                RectTransform.pivot = Vector2.zero;
+                RectTransform.anchoredPosition = new Vector2(Screen.safeArea.x / canvasScale.x, Screen.safeArea.y / canvasScale.y);
+                RectTransform.sizeDelta = new Vector2(Screen.safeArea.width / canvasScale.x, Screen.safeArea.height / canvasScale.y);
+            }
+
+            foreach (var postProcess in PostProcesses)
+            {
+                postProcess.PostProcess(this);
             }
         }
     }
