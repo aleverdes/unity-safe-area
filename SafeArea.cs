@@ -11,6 +11,9 @@ namespace AffenCode
         public RectTransform RectTransform;
         public CanvasScaler CanvasScaler;
         public SafeAreaPostProcess[] PostProcesses;
+
+        private int _prevScreenWidth;
+        private int _prevScreenHeight;
         
         private void Reset()
         {
@@ -24,9 +27,18 @@ namespace AffenCode
             Process();
         }
 
+        private void Update()
+        {
+            if (_prevScreenHeight == Screen.height && _prevScreenWidth == Screen.width)
+            {
+                return;
+            }
+            
+            Process();
+        }
+
         private void Process()
         {
-
             if (!CanvasScaler)
             {
                 CanvasScaler = GetComponentInParent<CanvasScaler>();
@@ -69,6 +81,9 @@ namespace AffenCode
             {
                 postProcess.PostProcess(this);
             }
+
+            _prevScreenWidth = Screen.width;
+            _prevScreenHeight = Screen.height;
         }
     }
 }
