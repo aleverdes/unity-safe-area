@@ -39,6 +39,10 @@ namespace AffenCode
 
         private void Process()
         {
+#if UNITY_WEBGL
+            return;
+#endif
+            
             if (!CanvasScaler)
             {
                 CanvasScaler = GetComponentInParent<CanvasScaler>();
