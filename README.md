@@ -237,12 +237,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 Test on multiple devices and CanvasScaler configurations to ensure compatibility.
 
-## 📞 Support
-
-- Create an [issue](https://github.com/yourusername/unity-safe-area/issues) for bugs
-- Check the [Wiki](https://github.com/yourusername/unity-safe-area/wiki) for guides
-- Join the [Discussions](https://github.com/yourusername/unity-safe-area/discussions) for questions
-
 ---
 
 Made with ❤️ for Unity developers
